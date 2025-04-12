@@ -1,24 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React from 'react';
+import ApologyCard from './Cards/ApologyCard'; // Adjust path if needed
+import './index.css'; // Or your main CSS file containing resets
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    // The App component might not need specific styling itself
+    // if ApologyCard handles the full background
+    <ApologyCard />
   );
 }
 

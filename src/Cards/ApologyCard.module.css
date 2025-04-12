@@ -1,0 +1,113 @@
+/* ApologyCard.module.css */
+
+/* Wrapper for centering (same as before) */
+.cardWrapper {
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to top right, #ffd6d6, #fef6f9); /* Original gradient */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+  }
+  
+  /* Card styles (mostly same as before) */
+  .card {
+    background-color: white;
+    padding: 40px 50px; /* Adjusted padding slightly */
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 500px;
+    position: relative;
+    overflow: hidden; /* Keep overflow hidden */
+    /* Fade-in animation (can keep if desired) */
+    animation: fadeIn 1.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Styles for the SVG container div */
+  .heartContainer {
+    margin-bottom: 25px; /* Space below heart */
+    display: inline-block; /* Allows text-align center */
+    position: relative; /* For potential future absolute elements if needed */
+  }
+  
+  /* Message and Quote styles (same as before) */
+  .message {
+    font-size: 19px; /* Slightly smaller to fit better */
+    color: #444;
+    margin-top: 0; /* Removed top margin as heartContainer has bottom margin */
+    line-height: 1.6;
+  }
+  .quote {
+    font-style: italic;
+    color: #888;
+    margin-top: 15px;
+    font-size: 16px;
+  }
+  
+  /* Button container and positioning (adjustments needed for button elements) */
+  .buttonContainer {
+    margin-top: 35px;
+    display: flex; /* Using flex for alignment */
+    justify-content: center; /* Center buttons horizontally */
+    align-items: center; /* Center vertically */
+    gap: 60px; /* Space between Yes/No buttons */
+    position: relative; /* Needed for absolute positioning of No button */
+    height: 80px; /* Define height for No button positioning */
+    padding: 0 20px; /* Add some padding so No button doesn't hit edges */
+  }
+  
+  /* Base button styles */
+  .button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease; /* Add slight scale effect on hover/focus */
+    border-radius: 50%; /* Make focus outline circular */
+  }
+  .button svg {
+    display: block; /* Remove extra space below SVG */
+    width: 50px; /* Slightly smaller buttons */
+    height: 50px;
+  }
+  .button:hover, .button:focus {
+    transform: scale(1.1);
+  }
+  /* Style focus states clearly */
+  .button:focus-visible {
+   outline: 2px solid dodgerblue;
+   outline-offset: 3px;
+  }
+  
+  
+  /* Specific positioning for the No button */
+  .noButton {
+    position: absolute;
+    /* Initial position calculated relative to container center */
+    /* Starts slightly right of center */
+    left: calc(50% + 30px); /* (gap / 2) */
+    top: 50%; /* Vertically centered */
+    transform: translate(-50%, -50%); /* Fine-tune centering */
+    transition: top 0.3s ease-out, left 0.3s ease-out, transform 0.2s ease; /* Added transform transition */
+    z-index: 1;
+  }
+
+  .heartContainer {
+    margin-bottom: 25px;
+    display: inline-block;
+    position: relative;
+  }
+  
+  /* Add styles for the mended heart glow effect */
+  /* .heartBodyMended {
+    filter: drop-shadow(0 0 8px #FFD700);
+  } */
