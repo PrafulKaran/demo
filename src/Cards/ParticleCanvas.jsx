@@ -3,14 +3,18 @@ import React, { useRef, useEffect, useState } from 'react';
 
 // Configuration for particles
 const PARTICLE_CONFIG = {
-  count: 100, // Number of particles
+  count: 100, // Base number of particles (adjust as needed)
+  mobileCount: 60, // Reduced count for smaller screens
   minSpeed: 0.1,
   maxSpeed: 0.5,
   minRadius: 1,
   maxRadius: 2.5,
   color: 'rgba(255, 255, 255, 0.6)', // Subtle white/transparent
-  connectionDistance: 100, // Max distance to draw connection lines (optional)
-  connectionColor: 'rgba(255, 255, 255, 0.05)', // Very faint connection lines
+  burstSpeedMultiplier: 6, // How fast particles burst outwards (adjust)
+  burstDampening: 0.96, // How quickly burst speed fades (0.9 to 0.99)
+  // Optional connection line settings (can impact performance)
+  // connectionDistance: 100,
+  // connectionColor: 'rgba(255, 255, 255, 0.05)',
 };
 
 const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
@@ -24,7 +28,11 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
   const initializeParticles = (canvas) => {
     particlesRef.current = [];
     const { width, height } = canvas;
-    for (let i = 0; i < PARTICLE_CONFIG.count; i++) {
+    // Adjust count based on screen width
+    const isMobile = width < 600;
+    const count = isMobile ? PARTICLE_CONFIG.mobileCount : PARTICLE_CONFIG.count;
+
+    for (let i = 0; i < count; i++) {
       const radius = Math.random() * (PARTICLE_CONFIG.maxRadius - PARTICLE_CONFIG.minRadius) + PARTICLE_CONFIG.minRadius;
       const x = Math.random() * width;
       const y = Math.random() * height;
@@ -32,31 +40,34 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
       const speed = Math.random() * (PARTICLE_CONFIG.maxSpeed - PARTICLE_CONFIG.minSpeed) + PARTICLE_CONFIG.minSpeed;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
-      particlesRef.current.push({ x, y, vx, vy, radius, initialVx: vx, initialVy: vy, targetX: null, targetY: null, burstSpeed: 0 });
+      particlesRef.current.push({
+        x, y, vx, vy, radius,
+        initialVx: vx, initialVy: vy, // Store original velocity for reset
+        targetX: null, targetY: null, burstSpeed: 0
+      });
     }
   };
 
   // Update particle positions and handle effects
-  const updateParticles = (canvas, ctx) => {
+  const updateParticles = (canvas) => {
     const { width, height } = canvas;
     particlesRef.current.forEach(p => {
       // Burst effect
       if (isBursting && p.burstSpeed > 0) {
           p.x += p.vx * p.burstSpeed;
           p.y += p.vy * p.burstSpeed;
-          p.burstSpeed *= 0.96; // Dampen burst speed
+          p.burstSpeed *= PARTICLE_CONFIG.burstDampening; // Dampen burst speed
           if (p.burstSpeed < 0.1) {
               p.burstSpeed = 0;
-              // Reset to normal drift after burst fades
+              // Reset to normal drift speed/direction after burst fades
               p.vx = p.initialVx;
               p.vy = p.initialVy;
           }
-      } else {
+      } else if (!isBursting && p.burstSpeed === 0) { // Only drift if not bursting & burst is finished
           // Normal drift
           p.x += p.vx;
           p.y += p.vy;
       }
-
 
       // Boundary checks (wrap around screen)
       if (p.x < -p.radius) p.x = width + p.radius;
@@ -66,7 +77,7 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
     });
   };
 
-  // Draw particles and optional connections
+  // Draw particles
   const drawParticles = (ctx) => {
       particlesRef.current.forEach(p => {
         ctx.beginPath();
@@ -75,23 +86,26 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
         ctx.fill();
       });
 
-    // Optional: Draw faint connection lines between close particles
-    // This can be performance intensive, keep connectionDistance reasonable
+    // --- Optional: Draw connection lines (commented out by default) ---
+    // const connectDistSq = PARTICLE_CONFIG.connectionDistance * PARTICLE_CONFIG.connectionDistance;
     // ctx.lineWidth = 0.5;
     // ctx.strokeStyle = PARTICLE_CONFIG.connectionColor;
     // for (let i = 0; i < particlesRef.current.length; i++) {
     //     for (let j = i + 1; j < particlesRef.current.length; j++) {
-    //         const dx = particlesRef.current[i].x - particlesRef.current[j].x;
-    //         const dy = particlesRef.current[i].y - particlesRef.current[j].y;
-    //         const distance = Math.sqrt(dx * dx + dy * dy);
-    //         if (distance < PARTICLE_CONFIG.connectionDistance) {
+    //         const p1 = particlesRef.current[i];
+    //         const p2 = particlesRef.current[j];
+    //         const dx = p1.x - p2.x;
+    //         const dy = p1.y - p2.y;
+    //         const distanceSq = dx * dx + dy * dy;
+    //         if (distanceSq < connectDistSq) {
     //             ctx.beginPath();
-    //             ctx.moveTo(particlesRef.current[i].x, particlesRef.current[i].y);
-    //             ctx.lineTo(particlesRef.current[j].x, particlesRef.current[j].y);
+    //             ctx.moveTo(p1.x, p1.y);
+    //             ctx.lineTo(p2.x, p2.y);
     //             ctx.stroke();
     //         }
     //     }
     // }
+    // --- End Optional Connection Lines ---
   };
 
   // Animation loop
@@ -101,14 +115,14 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    updateParticles(canvas, ctx);
-    drawParticles(ctx);
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas each frame
+    updateParticles(canvas); // Update positions
+    drawParticles(ctx);      // Draw particles
 
-    animationFrameIdRef.current = requestAnimationFrame(animate);
+    animationFrameIdRef.current = requestAnimationFrame(animate); // Continue loop
   };
 
-  // Effect for setup and resizing
+  // Effect for setup, resize handling, and starting animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -116,56 +130,59 @@ const ParticleCanvas = ({ className, triggerBurst, heartCenter }) => {
     const handleResize = () => {
       const newWidth = window.innerWidth;
       const newHeight = window.innerHeight;
-      setDimensions({ width: newWidth, height: newHeight });
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      // Re-initialize particles on resize to distribute them evenly
-      initializeParticles(canvas);
+      // Only resize and re-initialize if dimensions actually changed
+      if (newWidth !== dimensions.width || newHeight !== dimensions.height) {
+          setDimensions({ width: newWidth, height: newHeight });
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          initializeParticles(canvas); // Re-initialize particles for new size/count
+      }
     };
 
-    handleResize(); // Initial size setup
-    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial size setup & particle init
+    window.addEventListener('resize', handleResize); // Add resize listener
 
-    // Start animation loop
-    animationFrameIdRef.current = requestAnimationFrame(animate);
+    animationFrameIdRef.current = requestAnimationFrame(animate); // Start animation loop
 
     // Cleanup function
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize); // Remove listener
       if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
+        cancelAnimationFrame(animationFrameIdRef.current); // Stop animation loop
       }
     };
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, [dimensions.width, dimensions.height]); // Rerun effect if dimensions change
 
   // Effect to handle the burst trigger from the parent
   useEffect(() => {
-      if (triggerBurst && heartCenter) {
+      // Trigger only when the counter increments (value > 0) and heartCenter is known
+      if (triggerBurst > 0 && heartCenter && heartCenter.x !== 0) {
           setIsBursting(true);
           particlesRef.current.forEach(p => {
-              // Calculate direction vector from heart center
+              // Calculate direction vector from heart center to particle
               const dx = p.x - heartCenter.x;
               const dy = p.y - heartCenter.y;
               const dist = Math.sqrt(dx*dx + dy*dy);
-              // Normalize the direction vector
-              const burstVx = (dist > 0) ? dx / dist : Math.random() - 0.5;
-              const burstVy = (dist > 0) ? dy / dist : Math.random() - 0.5;
 
-              p.vx = burstVx; // Set direction for burst
+              // Normalize the direction vector (handle zero distance case)
+              const burstVx = (dist > 0) ? dx / dist : Math.cos(Math.random() * Math.PI * 2);
+              const burstVy = (dist > 0) ? dy / dist : Math.sin(Math.random() * Math.PI * 2);
+
+              p.vx = burstVx; // Set direction for burst (temporary)
               p.vy = burstVy;
-              p.burstSpeed = Math.random() * 8 + 4; // Assign random burst speed magnitude
+              // Assign random burst speed magnitude
+              p.burstSpeed = Math.random() * PARTICLE_CONFIG.burstSpeedMultiplier + (PARTICLE_CONFIG.burstSpeedMultiplier / 2);
           });
 
-          // Reset burst state after a delay (e.g., 2 seconds)
+          // Automatically reset bursting state after a while
           const timer = setTimeout(() => {
               setIsBursting(false);
-              // Could optionally reset particles to drift here if needed
-              // Or let the update loop handle it when burstSpeed dampens
-          }, 2000);
-          return () => clearTimeout(timer); // Cleanup timeout
-      }
-  }, [triggerBurst, heartCenter]); // Depend on trigger and heartCenter
+              // Particles will naturally reset velocity via updateParticles logic
+          }, 2500); // Duration of burst effect visibility (adjust as needed)
 
+          return () => clearTimeout(timer); // Cleanup timeout if trigger changes quickly
+      }
+  }, [triggerBurst, heartCenter]); // Depend on trigger counter and heartCenter position
 
   return <canvas ref={canvasRef} className={className} />;
 };

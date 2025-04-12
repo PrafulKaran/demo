@@ -7,11 +7,14 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  box-sizing: border-box; /* Optional but often helpful */
+  box-sizing: border-box; /* Apply a sensible box-sizing model */
 }
 
 *, *:before, *:after {
   box-sizing: inherit; /* Inherit box-sizing */
 }
 
-/* Add any other global styles or resets here */
+/* Ensure buttons have default cursor */
+button {
+  cursor: pointer;
+}

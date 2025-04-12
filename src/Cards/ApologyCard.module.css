@@ -1,6 +1,6 @@
-/* ApologyCard.module.css */
+/* src/components/ApologyCard.module.css */
 
-/* Wrapper for centering (same as before) */
+/* Wrapper: Centers card, provides dark background */
 .cardWrapper {
     margin: 0;
     height: 100vh;
@@ -8,120 +8,171 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Darker, atmospheric background */
-    background: linear-gradient(to top right, #1a2333, #3e4a61); /* Example dark blue/grey */
-    /* Or use a background image: */
-    /* background-image: url('/path/to/your/starry-background.jpg'); */
-    /* background-size: cover; */
-    /* background-position: center; */
+    /* Dark, atmospheric background gradient */
+    background: linear-gradient(to top right, #1a2333, #3e4a61);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden; /* Crucial to contain canvas */
-    position: relative; /* Needed for positioning canvas behind card */
+    overflow: hidden; /* Important to contain absolutely positioned elements */
+    position: relative; /* Needed for z-index stacking context */
   }
-
+  
+  /* Particle Canvas: Full screen, behind the card */
   .particleCanvas {
-    position: absolute; /* Take it out of flow */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0; /* Place it behind the card */
-    pointer-events: none; /* Allow clicks to pass through to card */
+    z-index: 0; /* Places it behind the card */
+    pointer-events: none; /* Allows interactions with elements behind it */
   }
   
-  /* Card styles (mostly same as before) */
+  /* Card: Main content container */
   .card {
     background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
-    padding: 40px 50px;
+    padding: 40px 50px; /* Desktop padding */
     border-radius: 30px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); /* Stronger shadow on dark bg */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); /* Prominent shadow on dark bg */
     text-align: center;
-    max-width: 500px;
-    position: relative; /* Keep relative for internal positioning */
+    max-width: 500px; /* Max width on desktop */
+    width: 90%; /* Allow shrinking on smaller viewports */
+    position: relative; /* Needed for z-index and button positioning */
     z-index: 1; /* Ensure card is above canvas */
-    overflow: visible; /* Change from hidden to allow heart glow fully */
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    overflow: visible; /* Allow heart glow/effects to spill slightly */
   }
   
-  /* Styles for the SVG container div */
+  /* Container for the Heart SVG */
   .heartContainer {
-    margin-bottom: 25px; /* Space below heart */
-    display: inline-block; /* Allows text-align center */
-    position: relative; /* For potential future absolute elements if needed */
+    margin-bottom: 20px;
+    display: inline-block; /* Allows text-align: center */
+    position: relative; /* For potential future use */
   }
   
-  /* Message and Quote styles (same as before) */
+  /* Controls the size of the SVG element via CSS */
+  .heartContainer svg.theHeartSvg { /* Target the specific SVG via class */
+     width: 120px; /* Base size for desktop */
+     height: 110px;
+     display: block; /* Removes extra space below inline elements */
+     margin: 0 auto; /* Center if container is wider */
+  }
+  
+  /* Text content styles */
   .message {
-    font-size: 19px; /* Slightly smaller to fit better */
+    font-size: 18px;
     color: #444;
-    margin-top: 0; /* Removed top margin as heartContainer has bottom margin */
-    line-height: 1.6;
+    margin-top: 0;
+    line-height: 1.5;
   }
   .quote {
     font-style: italic;
     color: #888;
     margin-top: 15px;
-    font-size: 16px;
+    font-size: 15px;
   }
   
-  /* Button container and positioning (adjustments needed for button elements) */
+  /* Container for Yes/No buttons */
   .buttonContainer {
-    margin-top: 35px;
-    display: flex; /* Using flex for alignment */
-    justify-content: center; /* Center buttons horizontally */
-    align-items: center; /* Center vertically */
-    gap: 60px; /* Space between Yes/No buttons */
-    position: relative; /* Needed for absolute positioning of No button */
-    height: 80px; /* Define height for No button positioning */
-    padding: 0 20px; /* Add some padding so No button doesn't hit edges */
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px; /* Space between buttons */
+    position: relative; /* Crucial for absolute positioning of No button */
+    height: 70px; /* Defines vertical space for No button movement */
+    padding: 0 15px; /* Horizontal padding */
   }
   
-  /* Base button styles */
+  /* Base styles for both buttons */
   .button {
     border: none;
     background: none;
-    padding: 0;
+    padding: 0; /* Remove default padding */
     cursor: pointer;
-    transition: transform 0.2s ease; /* Add slight scale effect on hover/focus */
-    border-radius: 50%; /* Make focus outline circular */
+    transition: transform 0.2s ease;
+    border-radius: 50%; /* For circular focus outline */
+    /* Improve mobile tap experience */
+    -webkit-tap-highlight-color: transparent;
   }
   .button svg {
-    display: block; /* Remove extra space below SVG */
-    width: 50px; /* Slightly smaller buttons */
+    display: block; /* Prevent extra space */
+    width: 50px; /* Base size for button icons */
     height: 50px;
   }
-  .button:hover, .button:focus {
+  /* Hover/Focus effect for interactive buttons */
+  .button:hover:not(:disabled),
+  .button:focus-visible:not(:disabled) {
     transform: scale(1.1);
   }
-  /* Style focus states clearly */
+  /* Clear visual focus indicator */
   .button:focus-visible {
    outline: 2px solid dodgerblue;
    outline-offset: 3px;
   }
   
-  
-  /* Specific positioning for the No button */
+  /* Specific styles for the absolutely positioned "No" button */
   .noButton {
     position: absolute;
-    /* Initial position calculated relative to container center */
-    /* Starts slightly right of center */
-    left: calc(50% + 30px); /* (gap / 2) */
-    top: 50%; /* Vertically centered */
-    transform: translate(-50%, -50%); /* Fine-tune centering */
-    transition: top 0.3s ease-out, left 0.3s ease-out, transform 0.2s ease; /* Added transform transition */
-    z-index: 1;
-  }
-
-  .heartContainer {
-    margin-bottom: 25px;
-    display: inline-block;
-    position: relative;
+    /* Initial position slightly right of center */
+    left: calc(50% + 30px); /* Adjust based on gap */
+    top: 50%;
+    transform: translate(-50%, -50%); /* Center vertically */
+    transition: top 0.3s ease-out, left 0.3s ease-out, transform 0.2s ease;
+    z-index: 1; /* Ensure it's potentially above other elements in container if needed */
   }
   
-  /* Add styles for the mended heart glow effect */
-  /* .heartBodyMended {
-    filter: drop-shadow(0 0 8px #FFD700);
-  } */
+  /* --- Responsive Adjustments --- */
+  @media (max-width: 600px) {
+    .card {
+      width: 90%; /* Ensure it doesn't hit edges */
+      max-width: none; /* Remove desktop constraint */
+      padding: 30px 20px; /* Reduce padding */
+    }
+  
+    .heartContainer svg.theHeartSvg {
+       /* Reduce heart size */
+       width: 100px;
+       height: 90px;
+    }
+  
+    .message {
+      font-size: 16px; /* Reduce font size */
+    }
+    .quote {
+      font-size: 14px; /* Reduce font size */
+    }
+  
+    .buttonContainer {
+      gap: 40px; /* Reduce gap */
+      height: 60px; /* Reduce height */
+      padding: 0 10px; /* Reduce padding */
+    }
+  
+    .button svg {
+      /* Reduce button icon size */
+      width: 45px;
+      height: 45px;
+    }
+  
+    .noButton {
+       /* Readjust initial offset for smaller gap */
+       left: calc(50% + 25px);
+    }
+  }
+  
+  /* Optional: Further tweaks for very small screens */
+  @media (max-width: 360px) {
+     .card {
+        padding: 25px 15px;
+     }
+      .message {
+        font-size: 15px;
+     }
+     .quote {
+        font-size: 13px;
+     }
+     .buttonContainer {
+        gap: 30px;
+     }
+      .noButton {
+        left: calc(50% + 20px);
+     }
+  }
